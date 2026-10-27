@@ -26,22 +26,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          USER="${{ secrets.PA_USERNAME }}"
-          TOKEN="${{ secrets.PA_TOKEN }}"
-          TARGET_DIR="${{ secrets.PA_TARGET_DIR }}"
-          DOMAIN="${{ secrets.PA_WEBAPP_DOMAIN }}"
 
-          # Nettoyage des slashes au début/fin de TARGET_DIR
+          # Nettoyage automatique des espaces et retours à la ligne invisibles dans les secrets
+          USER=$(echo "${{ secrets.PA_USERNAME }}" | tr -d '\r\n ')
+          TOKEN=$(echo "${{ secrets.PA_TOKEN }}" | tr -d '\r\n ')
+          TARGET_DIR=$(echo "${{ secrets.PA_TARGET_DIR }}" | tr -d '\r\n')
+          DOMAIN=$(echo "${{ secrets.PA_WEBAPP_DOMAIN }}" | tr -d '\r\n ')
+
+          HOST=$(echo "${{ secrets.PA_HOST }}" | tr -d '\r\n ')
+          if [[ -z "${HOST}" ]]; then HOST="www.pythonanywhere.com"; fi
+
+          # Nettoyage des slashes au début et à la fin de TARGET_DIR
           TARGET_DIR="${TARGET_DIR#/}"
           TARGET_DIR="${TARGET_DIR%/}"
-
-          HOST="${{ secrets.PA_HOST }}"
-          if [[ -z "${HOST}" ]]; then HOST="www.pythonanywhere.com"; fi
 
           echo "Using PythonAnywhere host: ${HOST}"
           echo "Target directory: /${TARGET_DIR}"
 
-          # Upload chaque fichier
+          # Upload de chaque fichier
           while IFS= read -r -d '' file; do
             rel="${file#./}"
 
