@@ -31,24 +31,27 @@ jobs:
           TARGET_DIR="${{ secrets.PA_TARGET_DIR }}"
           DOMAIN="${{ secrets.PA_WEBAPP_DOMAIN }}"
 
-          # Optional: set PA_HOST secret to "eu.pythonanywhere.com" if your account is on EU.
+          # Nettoyage des slashes au début/fin de TARGET_DIR
+          TARGET_DIR="${TARGET_DIR#/}"
+          TARGET_DIR="${TARGET_DIR%/}"
+
           HOST="${{ secrets.PA_HOST }}"
           if [[ -z "${HOST}" ]]; then HOST="www.pythonanywhere.com"; fi
 
           echo "Using PythonAnywhere host: ${HOST}"
-          echo "Target directory: ${TARGET_DIR}"
+          echo "Target directory: /${TARGET_DIR}"
 
-          # Upload every file; remote directories are created automatically by the Files API.
+          # Upload chaque fichier
           while IFS= read -r -d '' file; do
             rel="${file#./}"
 
-            # Exclusions (adjust to taste)
+            # Exclusions
             case "$rel" in
               .git/*|.github/*|.venv/*|__pycache__/*|node_modules/*) continue ;;
               *.pyc|.DS_Store) continue ;;
             esac
 
-            remote_path="${TARGET_DIR}/${rel}"
+            remote_path="/${TARGET_DIR}/${rel}"
             echo " - ${rel} -> ${remote_path}"
 
             curl -sS --fail -X POST \
